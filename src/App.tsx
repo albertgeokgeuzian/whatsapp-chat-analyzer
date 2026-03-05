@@ -66,10 +66,8 @@ function App() {
             </button>
           </header>
 
-          <div className="dashboard-grid">
-            <div className="glass-panel panel-main">
-              {stats && <StatisticsBoard stats={stats} />}
-            </div>
+          <div className="mt-6">
+            {stats && <StatisticsBoard stats={stats} />}
           </div>
         </div>
       )}

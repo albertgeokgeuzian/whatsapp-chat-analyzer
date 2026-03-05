@@ -78,7 +78,7 @@ export function StatisticsBoard({ stats }: Props) {
   }, [stats]);
 
   return (
-    <div className="stats-board-container scrollable">
+    <div className="stats-board-container">
       <div className="stats-header">
         <h3>Overview</h3>
       </div>
