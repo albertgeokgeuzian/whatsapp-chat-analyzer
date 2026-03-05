@@ -10,7 +10,10 @@ export interface ChatMessage {
   attachmentType?: "image" | "video" | "audio" | "document" | "other";
 }
 
-export function parseChatLog(text: string): ChatMessage[] {
+export function parseChatLog(
+  text: string,
+  excludeSystemMessages = false,
+): ChatMessage[] {
   const lines = text.split("\n");
   const messages: ChatMessage[] = [];
 
@@ -18,10 +21,10 @@ export function parseChatLog(text: string): ChatMessage[] {
   const iosRegex = /^\[(.*?)\] (.*?): (.*)$/;
 
   // Regex to match Android format: 8/10/23, 1:51 PM - Sender: Message text
-  const androidRegex = /^([^\[\]]+?)\s+-\s+(.*?):\s+(.*)$/;
+  const androidRegex = /^([^\][]+?)\s+-\s+(.*?):\s+(.*)$/;
 
   // Regex to match Android system messages: 8/10/23, 1:51 PM - Messages and calls are end-to-end encrypted...
-  const androidSystemRegex = /^([^\[\]]+?)\s+-\s+(.*)$/;
+  const androidSystemRegex = /^([^\][]+?)\s+-\s+(.*)$/;
 
   const attachmentRegex = /<attached: (.*?)>/;
 
@@ -50,17 +53,32 @@ export function parseChatLog(text: string): ChatMessage[] {
       content = androidMatch[3];
       isNewMessage = true;
     } else {
-      const systemMatch = line.match(androidSystemRegex);
-      // Ensure the "date" portion actually starts like a date to prevent false positives on random hyphens
-      if (systemMatch && /^\d{1,2}\/\d{1,2}\/\d{2,4}/.test(systemMatch[1])) {
-        dateString = systemMatch[1];
-        sender = "System"; // Fallback sender for system messages
-        content = systemMatch[2];
-        isNewMessage = true;
+      if (!excludeSystemMessages) {
+        const systemMatch = line.match(androidSystemRegex);
+        // Ensure the "date" portion actually starts like a date to prevent false positives on random hyphens
+        if (systemMatch && /^\d{1,2}\/\d{1,2}\/\d{2,4}/.test(systemMatch[1])) {
+          dateString = systemMatch[1];
+          sender = "System"; // Fallback sender for system messages
+          content = systemMatch[2];
+          isNewMessage = true;
+        }
       }
     }
 
     if (isNewMessage) {
+      const cleanContent = content
+        .replace(/[\u200E\u200F\u202A-\u202E]/g, "")
+        .trim();
+      if (
+        cleanContent.toLowerCase() === "<media omitted>" ||
+        /^(image|video|document|sticker|gif|audio|contact card) omitted$/i.test(
+          cleanContent,
+        )
+      ) {
+        currentMessage = null;
+        continue;
+      }
+
       // Clean up narrow no-break space replacing with normal space for parsing
       dateString = dateString
         .replace(/\u202F/g, " ")

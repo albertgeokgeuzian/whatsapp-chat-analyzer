@@ -174,51 +174,53 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>The Topic Killer (Conversation Ender)</h4>
           <div className="contributors-list">
-            {Object.entries(stats.topicKiller || {}).map(([sender, data]) => {
-              const topPhrase = Object.entries(data.phrases).sort(
-                (a, b) => b[1] - a[1],
-              )[0];
-              return (
-                <div
-                  key={sender}
-                  className="contributor-item"
-                  style={{
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: "0.5rem",
-                  }}
-                >
+            {Object.entries(stats.topicKiller || {})
+              .sort((a, b) => b[1].count - a[1].count)
+              .map(([sender, data]) => {
+                const topPhrase = Object.entries(data.phrases).sort(
+                  (a, b) => b[1] - a[1],
+                )[0];
+                return (
                   <div
+                    key={sender}
+                    className="contributor-item"
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: "0.5rem",
                     }}
                   >
-                    <span className="contributor-name">{sender}</span>
-                    <span
-                      className="contributor-count"
-                      style={{ color: "var(--primary)" }}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                      }}
                     >
-                      {data.count} times
-                    </span>
+                      <span className="contributor-name">{sender}</span>
+                      <span
+                        className="contributor-count"
+                        style={{ color: "var(--primary)" }}
+                      >
+                        {data.count} times
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                        fontSize: "0.85rem",
+                        color: "#94a3b8",
+                      }}
+                    >
+                      <span>
+                        Most used phrase: "{topPhrase ? topPhrase[0] : "N/A"}"
+                      </span>
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
-                      fontSize: "0.85rem",
-                      color: "#94a3b8",
-                    }}
-                  >
-                    <span>
-                      Most used phrase: "{topPhrase ? topPhrase[0] : "N/A"}"
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
 
@@ -226,8 +228,15 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>The Curator (Media Broadcaster)</h4>
           <div className="contributors-list">
-            {Object.entries(stats.mediaSharedPerSender || {}).map(
-              ([sender, media]) => {
+            {Object.entries(stats.mediaSharedPerSender || {})
+              .sort((a, b) => {
+                const totalA =
+                  a[1].photos + a[1].videos + a[1].audio + a[1].links;
+                const totalB =
+                  b[1].photos + b[1].videos + b[1].audio + b[1].links;
+                return totalB - totalA;
+              })
+              .map(([sender, media]) => {
                 const totalMedia = media.photos + media.videos + media.audio;
                 return (
                   <div
@@ -268,8 +277,7 @@ export function StatisticsBoard({ stats }: Props) {
                     </div>
                   </div>
                 );
-              },
-            )}
+              })}
           </div>
         </div>
 
@@ -277,21 +285,23 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>The Anchor (The Rerouter)</h4>
           <div className="contributors-list">
-            {Object.entries(stats.theAnchor || {}).map(([sender, count]) => (
-              <div
-                key={sender}
-                className="contributor-item"
-                style={{ justifyContent: "space-between" }}
-              >
-                <span className="contributor-name">{sender}</span>
-                <span
-                  className="contributor-count"
-                  style={{ color: "var(--primary)" }}
+            {Object.entries(stats.theAnchor || {})
+              .sort((a, b) => b[1] - a[1])
+              .map(([sender, count]) => (
+                <div
+                  key={sender}
+                  className="contributor-item"
+                  style={{ justifyContent: "space-between" }}
                 >
-                  Redirected {count} times
-                </span>
-              </div>
-            ))}
+                  <span className="contributor-name">{sender}</span>
+                  <span
+                    className="contributor-count"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    Redirected {count} times
+                  </span>
+                </div>
+              ))}
           </div>
         </div>
 
@@ -299,8 +309,9 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>Ghosting Threshold (Check-In Timer)</h4>
           <div className="contributors-list">
-            {Object.entries(stats.ghostingThreshold || {}).map(
-              ([sender, data]) => (
+            {Object.entries(stats.ghostingThreshold || {})
+              .sort((a, b) => b[1].averageWaitTimeMs - a[1].averageWaitTimeMs)
+              .map(([sender, data]) => (
                 <div
                   key={sender}
                   className="contributor-item"
@@ -337,8 +348,7 @@ export function StatisticsBoard({ stats }: Props) {
                     <span>Triggered {data.checkInCount} check-ins</span>
                   </div>
                 </div>
-              ),
-            )}
+              ))}
           </div>
         </div>
       </div>
@@ -358,68 +368,70 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>The Pronoun Shift ("I" vs. "We")</h4>
           <div className="contributors-list">
-            {Object.entries(stats.pronounShift || {}).map(([sender, data]) => (
-              <div
-                key={sender}
-                className="contributor-item"
-                style={{
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: "0.5rem",
-                }}
-              >
+            {Object.entries(stats.pronounShift || {})
+              .sort((a, b) => b[1].totalWePct - a[1].totalWePct)
+              .map(([sender, data]) => (
                 <div
+                  key={sender}
+                  className="contributor-item"
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: "0.5rem",
                   }}
                 >
-                  <span className="contributor-name">{sender}</span>
-                  <span
-                    className="contributor-count"
+                  <div
                     style={{
                       display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      color:
-                        data.trend === "UP"
-                          ? "#4ade80"
-                          : data.trend === "DOWN"
-                            ? "#f87171"
-                            : "#94a3b8",
+                      justifyContent: "space-between",
+                      width: "100%",
                     }}
                   >
-                    {data.trend === "UP" && <TrendingUp size={16} />}
-                    {data.trend === "DOWN" && <TrendingDown size={16} />}
-                    {data.trend === "FLAT" && <Minus size={16} />}
-                    {data.trend === "UP"
-                      ? "Upwards"
-                      : data.trend === "DOWN"
-                        ? "Downwards"
-                        : "Flat"}
-                  </span>
+                    <span className="contributor-name">{sender}</span>
+                    <span
+                      className="contributor-count"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        color:
+                          data.trend === "UP"
+                            ? "#4ade80"
+                            : data.trend === "DOWN"
+                              ? "#f87171"
+                              : "#94a3b8",
+                      }}
+                    >
+                      {data.trend === "UP" && <TrendingUp size={16} />}
+                      {data.trend === "DOWN" && <TrendingDown size={16} />}
+                      {data.trend === "FLAT" && <Minus size={16} />}
+                      {data.trend === "UP"
+                        ? "Upwards"
+                        : data.trend === "DOWN"
+                          ? "Downwards"
+                          : "Flat"}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      width: "100%",
+                      fontSize: "0.85rem",
+                      color: "#94a3b8",
+                    }}
+                  >
+                    <span>
+                      {(100 - data.totalWePct).toFixed(1)}% "I" |{" "}
+                      {data.totalWePct.toFixed(1)}% "We"
+                    </span>
+                    <span>
+                      Q1: {data.q1WePct.toFixed(1)}% → Q4:{" "}
+                      {data.q4WePct.toFixed(1)}%
+                    </span>
+                  </div>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    fontSize: "0.85rem",
-                    color: "#94a3b8",
-                  }}
-                >
-                  <span>
-                    {(100 - data.totalWePct).toFixed(1)}% "I" |{" "}
-                    {data.totalWePct.toFixed(1)}% "We"
-                  </span>
-                  <span>
-                    Q1: {data.q1WePct.toFixed(1)}% → Q4:{" "}
-                    {data.q4WePct.toFixed(1)}%
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
@@ -787,25 +799,30 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>Conversation Initiators (8h+ gap)</h4>
           <div className="contributors-list">
-            {Object.keys(stats.sendersCount).map((sender) => {
-              const count = stats.initiations?.[sender] || 0;
-              const percentage =
-                stats.totalInitiations > 0
-                  ? ((count / stats.totalInitiations) * 100).toFixed(1)
-                  : "0.0";
-              return (
-                <div
-                  key={sender}
-                  className="contributor-item"
-                  style={{ justifyContent: "space-between" }}
-                >
-                  <span className="contributor-name">{sender}</span>
-                  <span className="contributor-count">
-                    {count} ({percentage}%)
-                  </span>
-                </div>
-              );
-            })}
+            {Object.keys(stats.sendersCount)
+              .sort(
+                (a, b) =>
+                  (stats.initiations?.[b] || 0) - (stats.initiations?.[a] || 0),
+              )
+              .map((sender) => {
+                const count = stats.initiations?.[sender] || 0;
+                const percentage =
+                  stats.totalInitiations > 0
+                    ? ((count / stats.totalInitiations) * 100).toFixed(1)
+                    : "0.0";
+                return (
+                  <div
+                    key={sender}
+                    className="contributor-item"
+                    style={{ justifyContent: "space-between" }}
+                  >
+                    <span className="contributor-name">{sender}</span>
+                    <span className="contributor-count">
+                      {count} ({percentage}%)
+                    </span>
+                  </div>
+                );
+              })}
           </div>
         </div>
 
@@ -813,44 +830,51 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>Response Time Analysis</h4>
           <div className="contributors-list">
-            {Object.keys(stats.sendersCount).map((sender) => (
-              <div
-                key={sender}
-                className="contributor-item"
-                style={{
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: "0.5rem",
-                }}
-              >
+            {Object.keys(stats.sendersCount)
+              .sort(
+                (a, b) =>
+                  (stats.avgResponseTime?.[b] || 0) -
+                  (stats.avgResponseTime?.[a] || 0),
+              )
+              .map((sender) => (
                 <div
+                  key={sender}
+                  className="contributor-item"
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: "0.5rem",
                   }}
                 >
-                  <span className="contributor-name">{sender}</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      width: "100%",
+                    }}
+                  >
+                    <span className="contributor-name">{sender}</span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      width: "100%",
+                      fontSize: "0.85rem",
+                      color: "#94a3b8",
+                    }}
+                  >
+                    <span>
+                      Avg:{" "}
+                      {formatDuration(stats.avgResponseTime?.[sender] || 0)}
+                    </span>
+                    <span>
+                      Median:{" "}
+                      {formatDuration(stats.medianResponseTime?.[sender] || 0)}
+                    </span>
+                  </div>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    fontSize: "0.85rem",
-                    color: "#94a3b8",
-                  }}
-                >
-                  <span>
-                    Avg: {formatDuration(stats.avgResponseTime?.[sender] || 0)}
-                  </span>
-                  <span>
-                    Median:{" "}
-                    {formatDuration(stats.medianResponseTime?.[sender] || 0)}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
@@ -858,23 +882,33 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>Double Text Ratio</h4>
           <div className="contributors-list">
-            {Object.keys(stats.sendersCount).map((sender) => {
-              const dt = stats.doubleTextClusters?.[sender] || 0;
-              const total = stats.sendersCount[sender];
-              const ratio = ((dt / total) * 100).toFixed(1);
-              return (
-                <div
-                  key={sender}
-                  className="contributor-item"
-                  style={{ justifyContent: "space-between" }}
-                >
-                  <span className="contributor-name">{sender}</span>
-                  <span className="contributor-count">
-                    {dt} ({ratio}%)
-                  </span>
-                </div>
-              );
-            })}
+            {Object.keys(stats.sendersCount)
+              .sort((a, b) => {
+                const ratioA =
+                  (stats.doubleTextClusters?.[a] || 0) /
+                  (stats.sendersCount[a] || 1);
+                const ratioB =
+                  (stats.doubleTextClusters?.[b] || 0) /
+                  (stats.sendersCount[b] || 1);
+                return ratioB - ratioA;
+              })
+              .map((sender) => {
+                const dt = stats.doubleTextClusters?.[sender] || 0;
+                const total = stats.sendersCount[sender];
+                const ratio = ((dt / total) * 100).toFixed(1);
+                return (
+                  <div
+                    key={sender}
+                    className="contributor-item"
+                    style={{ justifyContent: "space-between" }}
+                  >
+                    <span className="contributor-name">{sender}</span>
+                    <span className="contributor-count">
+                      {dt} ({ratio}%)
+                    </span>
+                  </div>
+                );
+              })}
           </div>
         </div>
 
@@ -882,45 +916,55 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>Question-to-Statement Ratio</h4>
           <div className="contributors-list">
-            {Object.keys(stats.sendersCount).map((sender) => {
-              const q = stats.questionsCount?.[sender] || 0;
-              const s = stats.statementsCount?.[sender] || 0;
-              const ratio = s === 0 ? "∞" : (q / s).toFixed(2);
-              return (
-                <div
-                  key={sender}
-                  className="contributor-item"
-                  style={{
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: "0.5rem",
-                  }}
-                >
+            {Object.keys(stats.sendersCount)
+              .sort((a, b) => {
+                const rA =
+                  (stats.questionsCount?.[a] || 0) /
+                  (stats.statementsCount?.[a] || 1);
+                const rB =
+                  (stats.questionsCount?.[b] || 0) /
+                  (stats.statementsCount?.[b] || 1);
+                return rB - rA;
+              })
+              .map((sender) => {
+                const q = stats.questionsCount?.[sender] || 0;
+                const s = stats.statementsCount?.[sender] || 0;
+                const ratio = s === 0 ? "∞" : (q / s).toFixed(2);
+                return (
                   <div
+                    key={sender}
+                    className="contributor-item"
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: "0.5rem",
                     }}
                   >
-                    <span className="contributor-name">{sender}</span>
-                    <span className="contributor-count">{ratio} ratio</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                      }}
+                    >
+                      <span className="contributor-name">{sender}</span>
+                      <span className="contributor-count">{ratio} ratio</span>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                        fontSize: "0.85rem",
+                        color: "#94a3b8",
+                      }}
+                    >
+                      <span>{q} Questions</span>
+                      <span>{s} Statements</span>
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
-                      fontSize: "0.85rem",
-                      color: "#94a3b8",
-                    }}
-                  >
-                    <span>{q} Questions</span>
-                    <span>{s} Statements</span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
 
@@ -928,44 +972,52 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>Average Message Length</h4>
           <div className="contributors-list">
-            {Object.keys(stats.sendersCount).map((sender) => {
-              const msgs = stats.sendersCount[sender];
-              const words = stats.wordsCount?.[sender] || 0;
-              const chars = stats.charactersCount?.[sender] || 0;
-              return (
-                <div
-                  key={sender}
-                  className="contributor-item"
-                  style={{
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: "0.5rem",
-                  }}
-                >
+            {Object.keys(stats.sendersCount)
+              .sort((a, b) => {
+                const lA =
+                  (stats.wordsCount?.[a] || 0) / (stats.sendersCount[a] || 1);
+                const lB =
+                  (stats.wordsCount?.[b] || 0) / (stats.sendersCount[b] || 1);
+                return lB - lA;
+              })
+              .map((sender) => {
+                const msgs = stats.sendersCount[sender];
+                const words = stats.wordsCount?.[sender] || 0;
+                const chars = stats.charactersCount?.[sender] || 0;
+                return (
                   <div
+                    key={sender}
+                    className="contributor-item"
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: "0.5rem",
                     }}
                   >
-                    <span className="contributor-name">{sender}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                      }}
+                    >
+                      <span className="contributor-name">{sender}</span>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                        fontSize: "0.85rem",
+                        color: "#94a3b8",
+                      }}
+                    >
+                      <span>{(words / msgs).toFixed(1)} words/msg</span>
+                      <span>{(chars / msgs).toFixed(1)} chars/msg</span>
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
-                      fontSize: "0.85rem",
-                      color: "#94a3b8",
-                    }}
-                  >
-                    <span>{(words / msgs).toFixed(1)} words/msg</span>
-                    <span>{(chars / msgs).toFixed(1)} chars/msg</span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       </div>
@@ -1052,45 +1104,57 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>First and Last Word (The Sleep Bookends)</h4>
           <div className="contributors-list">
-            {Object.keys(stats.sendersCount).map((sender) => {
-              const first = stats.firstWords?.[sender] || 0;
-              const last = stats.lastWords?.[sender] || 0;
+            {Object.keys(stats.sendersCount)
+              .sort((a, b) => {
+                const pctA =
+                  stats.totalDaysWithSleepGap > 0
+                    ? (stats.firstWords?.[a] || 0) / stats.totalDaysWithSleepGap
+                    : 0;
+                const pctB =
+                  stats.totalDaysWithSleepGap > 0
+                    ? (stats.firstWords?.[b] || 0) / stats.totalDaysWithSleepGap
+                    : 0;
+                return pctB - pctA;
+              })
+              .map((sender) => {
+                const first = stats.firstWords?.[sender] || 0;
+                const last = stats.lastWords?.[sender] || 0;
 
-              const firstPct =
-                stats.totalDaysWithSleepGap > 0
-                  ? ((first / stats.totalDaysWithSleepGap) * 100).toFixed(1)
-                  : "0.0";
-              const lastPct =
-                stats.totalDaysWithSleepGap > 0
-                  ? ((last / stats.totalDaysWithSleepGap) * 100).toFixed(1)
-                  : "0.0";
+                const firstPct =
+                  stats.totalDaysWithSleepGap > 0
+                    ? ((first / stats.totalDaysWithSleepGap) * 100).toFixed(1)
+                    : "0.0";
+                const lastPct =
+                  stats.totalDaysWithSleepGap > 0
+                    ? ((last / stats.totalDaysWithSleepGap) * 100).toFixed(1)
+                    : "0.0";
 
-              return (
-                <div
-                  key={sender}
-                  className="contributor-item"
-                  style={{
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <span className="contributor-name">{sender}</span>
+                return (
                   <div
+                    key={sender}
+                    className="contributor-item"
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
-                      fontSize: "0.85rem",
-                      color: "#94a3b8",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: "0.5rem",
                     }}
                   >
-                    <span>First Word (Morning): {firstPct}%</span>
-                    <span>Last Word (Night): {lastPct}%</span>
+                    <span className="contributor-name">{sender}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                        fontSize: "0.85rem",
+                        color: "#94a3b8",
+                      }}
+                    >
+                      <span>First Word (Morning): {firstPct}%</span>
+                      <span>Last Word (Night): {lastPct}%</span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
 
@@ -1303,50 +1367,56 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>Most Used Words (The Core Vocabulary)</h4>
           <div className="contributors-list">
-            {Object.keys(stats.sendersCount).map((sender) => {
-              const topWords = stats.topWordsPerSender[sender] || [];
-              return (
-                <div
-                  key={sender}
-                  className="contributor-item"
-                  style={{
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <span
-                    className="contributor-name"
-                    style={{ color: "var(--primary)" }}
-                  >
-                    {sender}
-                  </span>
+            {Object.keys(stats.sendersCount)
+              .sort((a, b) => stats.sendersCount[b] - stats.sendersCount[a])
+              .map((sender) => {
+                const topWords = stats.topWordsPerSender[sender] || [];
+                return (
                   <div
-                    style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}
+                    key={sender}
+                    className="contributor-item"
+                    style={{
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: "0.5rem",
+                    }}
                   >
-                    {topWords.length > 0 ? (
-                      topWords.map((w, idx) => (
-                        <span
-                          key={idx}
-                          style={{
-                            background: "rgba(255,255,255,0.05)",
-                            padding: "2px 8px",
-                            borderRadius: "12px",
-                            fontSize: "0.85rem",
-                          }}
-                        >
-                          {w.word} ({w.count})
+                    <span
+                      className="contributor-name"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      {sender}
+                    </span>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      {topWords.length > 0 ? (
+                        topWords.map((w, idx) => (
+                          <span
+                            key={idx}
+                            style={{
+                              background: "rgba(255,255,255,0.05)",
+                              padding: "2px 8px",
+                              borderRadius: "12px",
+                              fontSize: "0.85rem",
+                            }}
+                          >
+                            {w.word} ({w.count})
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>
+                          No data
                         </span>
-                      ))
-                    ) : (
-                      <span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>
-                        No data
-                      </span>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
 
@@ -1354,49 +1424,51 @@ export function StatisticsBoard({ stats }: Props) {
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>The "Laugh Track" (Amusement Styles)</h4>
           <div className="contributors-list">
-            {Object.keys(stats.sendersCount).map((sender) => {
-              const laughs = stats.laughTrackPerSender[sender] || {};
-              const topLaughs = Object.entries(laughs)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
-              return (
-                <div
-                  key={sender}
-                  className="contributor-item"
-                  style={{
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <span
-                    className="contributor-name"
-                    style={{ color: "var(--primary)" }}
-                  >
-                    {sender}
-                  </span>
+            {Object.keys(stats.sendersCount)
+              .sort((a, b) => stats.sendersCount[b] - stats.sendersCount[a])
+              .map((sender) => {
+                const laughs = stats.laughTrackPerSender[sender] || {};
+                const topLaughs = Object.entries(laughs)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 5);
+                return (
                   <div
+                    key={sender}
+                    className="contributor-item"
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
-                      fontSize: "0.85rem",
-                      color: "#94a3b8",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: "0.5rem",
                     }}
                   >
-                    {topLaughs.length > 0 ? (
-                      topLaughs.map(([term, count], idx) => (
-                        <span key={idx}>
-                          {term} ({count})
-                        </span>
-                      ))
-                    ) : (
-                      <span>No laughs detected</span>
-                    )}
+                    <span
+                      className="contributor-name"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      {sender}
+                    </span>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                        fontSize: "0.85rem",
+                        color: "#94a3b8",
+                      }}
+                    >
+                      {topLaughs.length > 0 ? (
+                        topLaughs.map(([term, count], idx) => (
+                          <span key={idx}>
+                            {term} ({count})
+                          </span>
+                        ))
+                      ) : (
+                        <span>No laughs detected</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
 
