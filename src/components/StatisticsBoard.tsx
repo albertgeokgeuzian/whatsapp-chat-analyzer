@@ -1,3 +1,4 @@
+import { InfoTooltip } from "./InfoTooltip";
 import { useMemo } from "react";
 import type { ChatStatistics } from "../lib/statistics";
 import { formatDay, formatHour } from "../lib/statistics";
@@ -89,7 +90,7 @@ export function StatisticsBoard({ stats }: Props) {
             <MessageSquare size={20} />
           </div>
           <div className="stat-info">
-            <span className="stat-label">Total Messages</span>
+            <span className="stat-label">Total Messages <InfoTooltip text="The total number of messages sent in the chat." /></span>
             <span className="stat-value">
               {stats.totalMessages.toLocaleString()}
             </span>
@@ -101,7 +102,7 @@ export function StatisticsBoard({ stats }: Props) {
             <Users size={20} />
           </div>
           <div className="stat-info">
-            <span className="stat-label">Participants</span>
+            <span className="stat-label">Participants <InfoTooltip text="The total number of unique users who have sent at least one message." /></span>
             <span className="stat-value">
               {Object.keys(stats.sendersCount).length}
             </span>
@@ -113,7 +114,7 @@ export function StatisticsBoard({ stats }: Props) {
             <Paperclip size={20} />
           </div>
           <div className="stat-info">
-            <span className="stat-label">Media Shared</span>
+            <span className="stat-label">Media Shared <InfoTooltip text="The total number of media attachments (images, videos, audio, etc.) and links shared." /></span>
             <span className="stat-value">
               {stats.totalAttachments.toLocaleString()}
             </span>
@@ -125,7 +126,7 @@ export function StatisticsBoard({ stats }: Props) {
             <Clock size={20} />
           </div>
           <div className="stat-info">
-            <span className="stat-label">Most Active Hour</span>
+            <span className="stat-label">Most Active Hour <InfoTooltip text="The single hour of the day (0-23) with the highest total message volume." /></span>
             <span className="stat-value">
               {stats.topHour !== null ? formatHour(stats.topHour) : "-"}
             </span>
@@ -137,7 +138,7 @@ export function StatisticsBoard({ stats }: Props) {
             <Calendar size={20} />
           </div>
           <div className="stat-info">
-            <span className="stat-label">Most Active Day</span>
+            <span className="stat-label">Most Active Day <InfoTooltip text="The day of the week with the most messages sent overall." /></span>
             <span className="stat-value">
               {stats.topDay !== null ? formatDay(stats.topDay) : "-"}
             </span>
@@ -149,7 +150,7 @@ export function StatisticsBoard({ stats }: Props) {
             <CalendarDays size={20} />
           </div>
           <div className="stat-info">
-            <span className="stat-label">Most Active Date</span>
+            <span className="stat-label">Most Active Date <InfoTooltip text="The specific calendar date with the highest volume of messages." /></span>
             <span className="stat-value">
               {stats.topDate
                 ? format(new Date(stats.topDate), "MMM d, yyyy")
@@ -172,7 +173,7 @@ export function StatisticsBoard({ stats }: Props) {
       >
         {/* The Topic Killer */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Topic Killer (Conversation Ender)</h4>
+          <h4>The Topic Killer (Conversation Ender) <InfoTooltip text="The participant who sends the last message in a conversation most often, followed by a long pause." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.topicKiller || {})
               .sort((a, b) => b[1].count - a[1].count)
@@ -226,7 +227,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* The Curator */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Curator (Media Broadcaster)</h4>
+          <h4>The Curator (Media Broadcaster) <InfoTooltip text="The participant who shares the most photos, videos, and links." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.mediaSharedPerSender || {})
               .sort((a, b) => {
@@ -283,7 +284,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* The Anchor */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Anchor (The Rerouter)</h4>
+          <h4>The Anchor (The Rerouter) <InfoTooltip text="The participant who redirects the conversation to a new topic most frequently after a lull." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.theAnchor || {})
               .sort((a, b) => b[1] - a[1])
@@ -307,7 +308,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Ghosting Threshold */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Ghosting Threshold (Check-In Timer)</h4>
+          <h4>Ghosting Threshold (Check-In Timer) <InfoTooltip text="The average time a participant waits after being left on read before sending a follow-up message." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.ghostingThreshold || {})
               .sort((a, b) => b[1].averageWaitTimeMs - a[1].averageWaitTimeMs)
@@ -366,7 +367,7 @@ export function StatisticsBoard({ stats }: Props) {
       >
         {/* The Pronoun Shift */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Pronoun Shift ("I" vs. "We")</h4>
+          <h4>The Pronoun Shift ("I" vs. "We") <InfoTooltip text="The shift in ratio of singular (I/me/my) vs. plural (we/us/our) pronouns over the history of the chat." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.pronounShift || {})
               .sort((a, b) => b[1].totalWePct - a[1].totalWePct)
@@ -437,7 +438,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Emotional Contagion */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Emotional Contagion (The Mirror Effect)</h4>
+          <h4>Emotional Contagion (The Mirror Effect) <InfoTooltip text="How often one participant adopts a specific phrase, laughing style, or emoji newly introduced by another." /></h4>
           <div className="contributors-list">
             {(stats.emotionalContagion || []).map((data, index) => (
               <div
@@ -492,7 +493,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Sentiment Arc */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Sentiment Arc (The Vibe Over Time)</h4>
+          <h4>Sentiment Arc (The Vibe Over Time) <InfoTooltip text="The baseline mood (optimistic vs. pessimistic) based on sentiment analysis of the vocabulary used." /></h4>
           <div className="contributors-list">
             <div
               className="contributor-item"
@@ -559,7 +560,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Vulnerability Spikes */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Vulnerability Spikes (The Deep Talkers)</h4>
+          <h4>Vulnerability Spikes (The Deep Talkers) <InfoTooltip text="Participants with the highest word count in single, deeply reflective or profound messages." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.vulnerabilitySpikes || {})
               .sort((a, b) => b[1] - a[1])
@@ -593,7 +594,7 @@ export function StatisticsBoard({ stats }: Props) {
       >
         {/* The Busiest Day */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Busiest Day (Peak Interaction)</h4>
+          <h4>The Busiest Day (Peak Interaction) <InfoTooltip text="The single date with the absolute highest message volume, and how participation was split." /></h4>
           <div className="contributors-list">
             <div
               className="contributor-item"
@@ -656,7 +657,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* The Longest Monologue */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Longest Monologue (Ultimate Soapbox)</h4>
+          <h4>The Longest Monologue (Ultimate Soapbox) <InfoTooltip text="The longest unbroken stream of text or consecutive messages sent by a single participant without interruption." /></h4>
           <div className="contributors-list">
             <div
               className="contributor-item"
@@ -728,7 +729,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* The Most Active Month/Year */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Golden Era (Most Active Month)</h4>
+          <h4>The Golden Era (Most Active Month) <InfoTooltip text="The specific month and year with the highest total message frequency." /></h4>
           <div className="contributors-list">
             <div
               className="contributor-item"
@@ -773,7 +774,7 @@ export function StatisticsBoard({ stats }: Props) {
         }}
       >
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Top Contributors</h4>
+          <h4>Top Contributors <InfoTooltip text="Participants ranked by the total number of messages they have sent." /></h4>
           <div className="contributors-list">
             {topSenders.map(([sender, count], index) => (
               <div key={sender} className="contributor-item">
@@ -788,7 +789,7 @@ export function StatisticsBoard({ stats }: Props) {
         </div>
 
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Top Characters Sent</h4>
+          <h4>Top Characters Sent <InfoTooltip text="Participants ranked by the total number of characters they have typed." /></h4>
           <div className="contributors-list">
             {topCharacters.map(([sender, count], index) => (
               <div key={sender} className="contributor-item">
@@ -816,7 +817,7 @@ export function StatisticsBoard({ stats }: Props) {
       >
         {/* The Heat Check (Argument Index) */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Heat Check (Argument Index)</h4>
+          <h4>The Heat Check (Argument Index) <InfoTooltip text="Measures episodes of rapid, dense messaging containing absolute or intense words to detect potential arguments." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.argumentIndex || {})
               .sort((a, b) => b[1].score - a[1].score)
@@ -873,7 +874,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* The Apology Tracker */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Apology Tracker</h4>
+          <h4>The Apology Tracker <InfoTooltip text="Tracks the frequency of apology words (like 'sorry', 'my bad', 'apologies') used by each participant." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.apologyTracker || {})
               .sort((a, b) => b[1] - a[1])
@@ -897,7 +898,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* The Caretaker */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Caretaker (Check-ins)</h4>
+          <h4>The Caretaker (Check-ins) <InfoTooltip text="Scores participants based on how frequently they send check-in questions (like 'how are you', 'you okay?')." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.careAndAffection || {})
               .sort((a, b) => b[1].score - a[1].score)
@@ -958,7 +959,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* The Advisor vs The Seeker */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Advisor vs. The Seeker</h4>
+          <h4>The Advisor vs. The Seeker <InfoTooltip text="The ratio of statements offering advice/opinions versus messages asking questions." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.advisorVsOpinionated || {}).map(
               ([sender, data]) => {
@@ -1021,7 +1022,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Average Conversation Length */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Session Tracker</h4>
+          <h4>The Session Tracker <InfoTooltip text="The average number of messages and duration of an active conversation before a significant pause occurs." /></h4>
           <div className="contributors-list">
             <div
               className="contributor-item"
@@ -1074,7 +1075,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* The Gossip & Focus Matrix */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Gossip & Focus Matrix</h4>
+          <h4>The Gossip & Focus Matrix <InfoTooltip text="Categorizes the dominant conversation topics between gossip (people), grind (work/study), or venting (complaints)." /></h4>
           <div className="contributors-list">
             <div
               className="contributor-item"
@@ -1132,7 +1133,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Conversation Initiators */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Conversation Initiators (8h+ gap)</h4>
+          <h4>Conversation Initiators (8h+ gap) <InfoTooltip text="The participants who most often send the first message after a silence of 8 hours or more." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount)
               .sort(
@@ -1163,7 +1164,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Response Time Analysis */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Response Time Analysis</h4>
+          <h4>Response Time Analysis <InfoTooltip text="The average and median amount of time a participant takes to reply to a message in active conversations." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount)
               .sort(
@@ -1215,7 +1216,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Double Text Ratio */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Double Text Ratio</h4>
+          <h4>Double Text Ratio <InfoTooltip text="The percentage of times a participant sends multiple consecutive messages before getting a reply." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount)
               .sort((a, b) => {
@@ -1249,7 +1250,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Question-to-Statement Ratio */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Question-to-Statement Ratio</h4>
+          <h4>Question-to-Statement Ratio <InfoTooltip text="The proportion of messages each participant sends that are questions versus statements." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount)
               .sort((a, b) => {
@@ -1305,7 +1306,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Average Message Length */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Average Message Length</h4>
+          <h4>Average Message Length <InfoTooltip text="The typical number of words and characters per message for each participant." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount)
               .sort((a, b) => {
@@ -1370,7 +1371,7 @@ export function StatisticsBoard({ stats }: Props) {
       >
         {/* Activity Heatmap */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Activity Heatmap (The Daily Routine)</h4>
+          <h4>Activity Heatmap (The Daily Routine) <InfoTooltip text="The primary communication style and an overview of the most active times of day." /></h4>
           <div className="contributors-list">
             <div
               className="contributor-item"
@@ -1437,7 +1438,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* First and Last Word */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>First and Last Word (The Sleep Bookends)</h4>
+          <h4>First and Last Word (The Sleep Bookends) <InfoTooltip text="Who typically sends the first message of the day (morning) and the last message at night before a long gap." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount)
               .sort((a, b) => {
@@ -1495,7 +1496,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Longest Streak */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Longest Streak (Consistency)</h4>
+          <h4>Longest Streak (Consistency) <InfoTooltip text="The maximum number of consecutive days where at least one message was exchanged." /></h4>
           <div className="contributors-list">
             <div
               className="contributor-item"
@@ -1542,7 +1543,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Longest Silence */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Longest Silence (The Disconnect)</h4>
+          <h4>Longest Silence (The Disconnect) <InfoTooltip text="The longest continuous period of time with zero messages sent in the chat." /></h4>
           <div className="contributors-list">
             <div
               className="contributor-item"
@@ -1591,7 +1592,7 @@ export function StatisticsBoard({ stats }: Props) {
       </div>
 
       <div className="stats-section" style={{ height: "450px" }}>
-        <h4>Activity by Hour</h4>
+        <h4>Activity by Hour <InfoTooltip text="The total message volume distributed across the 24 hours of the day." /></h4>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={hourlyData}
@@ -1630,7 +1631,7 @@ export function StatisticsBoard({ stats }: Props) {
       </div>
 
       <div className="stats-section" style={{ height: "450px" }}>
-        <h4>Activity Over Time</h4>
+        <h4>Activity Over Time <InfoTooltip text="The total message volume distributed across all dates in the chat history." /></h4>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={dailyData}
@@ -1694,7 +1695,7 @@ export function StatisticsBoard({ stats }: Props) {
       >
         {/* Most Used Words (Top 10) */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Most Used Words (The Core Vocabulary)</h4>
+          <h4>Most Used Words (The Core Vocabulary) <InfoTooltip text="The most frequently used terms by each participant." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount)
               .sort((a, b) => stats.sendersCount[b] - stats.sendersCount[a])
@@ -1751,7 +1752,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* The Laugh Track */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The "Laugh Track" (Amusement Styles)</h4>
+          <h4>The "Laugh Track" (Amusement Styles) <InfoTooltip text="How each participant expresses laughter (e.g., 'haha', 'lol', emojis)." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount)
               .sort((a, b) => stats.sendersCount[b] - stats.sendersCount[a])
@@ -1803,7 +1804,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Top Emojis */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Top Emojis (The Emotional Tone)</h4>
+          <h4>Top Emojis (The Emotional Tone) <InfoTooltip text="The most frequently used emojis by each participant." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount).map((sender) => {
               const topEmojis = stats.topEmojisPerSender[sender] || [];
@@ -1851,7 +1852,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Media Shared */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Media Shared (The Broadcasters)</h4>
+          <h4>Media Shared (The Broadcasters) <InfoTooltip text="A breakdown of specific media types (photos, videos, audio, links) shared per person." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount).map((sender) => {
               const media = stats.mediaSharedPerSender[sender] || {
@@ -1899,7 +1900,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Profanity Index */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Profanity Index (The Colorful Vocabulary)</h4>
+          <h4>Profanity Index (The Colorful Vocabulary) <InfoTooltip text="The frequency of swear words used by each participant." /></h4>
           <div className="contributors-list">
             {Object.keys(stats.sendersCount).map((sender) => {
               const profanityCount = stats.profanityScorePerSender[sender] || 0;
@@ -1938,7 +1939,7 @@ export function StatisticsBoard({ stats }: Props) {
       >
         {/* Lexical Diversity */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Lexical Diversity (Vocabulary Breadth)</h4>
+          <h4>Lexical Diversity (Vocabulary Breadth) <InfoTooltip text="The percentage of unique words used relative to the total number of words typed." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.lexicalDiversity || {})
               .sort((a, b) => b[1].percentage - a[1].percentage)
@@ -1998,7 +1999,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Punctuation Personality */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Punctuation Personality (Expressiveness)</h4>
+          <h4>Punctuation Personality (Expressiveness) <InfoTooltip text="The unique way each participant uses exclamation marks, question marks, and ellipses." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.punctuationPersonality || {}).map(
               ([sender, data]) => {
@@ -2080,7 +2081,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* The Correction Rate */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>The Correction Rate (Typo Tracker)</h4>
+          <h4>The Correction Rate (Typo Tracker) <InfoTooltip text="How often a participant corrects a previous typo using an asterisk (e.g., '*word')." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.asteriskCorrections || {})
               .sort((a, b) => b[1] - a[1])
@@ -2112,7 +2113,7 @@ export function StatisticsBoard({ stats }: Props) {
 
         {/* Capitalization Habits */}
         <div className="stats-section" style={{ margin: 0 }}>
-          <h4>Capitalization Habits (Volume Knob)</h4>
+          <h4>Capitalization Habits (Volume Knob) <InfoTooltip text="The ratio of proper case, lowercase, and ALL CAPS text used by each participant." /></h4>
           <div className="contributors-list">
             {Object.entries(stats.capitalizationHabits || {}).map(
               ([sender, data]) => (
