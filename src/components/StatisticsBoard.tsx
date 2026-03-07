@@ -703,6 +703,25 @@ export function StatisticsBoard({ stats }: Props) {
                 </span>
                 <span>{stats.longestMonologue?.date || "-"}</span>
               </div>
+              {stats.longestMonologue?.text && (
+                <div
+                  style={{
+                    width: "100%",
+                    marginTop: "0.5rem",
+                    background: "var(--primary)",
+                    color: "#1e293b",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "16px 16px 16px 4px", // chat bubble look
+                    fontSize: "0.85rem",
+                    lineHeight: "1.4",
+                    maxHeight: "200px",
+                    overflowY: "auto",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {stats.longestMonologue.text}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -785,7 +804,7 @@ export function StatisticsBoard({ stats }: Props) {
       </div>
 
       <div className="stats-header" style={{ marginTop: "2rem" }}>
-        <h3>Behavioral Analysis</h3>
+        <h3>Behavioral & Relational Quirks</h3>
       </div>
 
       <div
@@ -795,6 +814,322 @@ export function StatisticsBoard({ stats }: Props) {
           gap: "1rem",
         }}
       >
+        {/* The Heat Check (Argument Index) */}
+        <div className="stats-section" style={{ margin: 0 }}>
+          <h4>The Heat Check (Argument Index)</h4>
+          <div className="contributors-list">
+            {Object.entries(stats.argumentIndex || {})
+              .sort((a, b) => b[1].score - a[1].score)
+              .map(([sender, data]) => (
+                <div
+                  key={sender}
+                  className="contributor-item"
+                  style={{
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      width: "100%",
+                    }}
+                  >
+                    <span className="contributor-name">{sender}</span>
+                    <span
+                      className="contributor-count"
+                      style={{ color: "#ef4444" }} /* red color for heat */
+                    >
+                      Score: {data.score}
+                    </span>
+                  </div>
+                  {data.score > 0 && data.maxIntensityMessage && (
+                    <div
+                      style={{
+                        width: "100%",
+                        background: "rgba(239, 68, 68, 0.1)",
+                        padding: "0.5rem",
+                        borderRadius: "8px",
+                        borderLeft: "3px solid #ef4444",
+                        fontSize: "0.85rem",
+                        color: "#f87171",
+                        fontStyle: "italic",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                      }}
+                    >
+                      "{data.maxIntensityMessage}"
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {/* The Apology Tracker */}
+        <div className="stats-section" style={{ margin: 0 }}>
+          <h4>The Apology Tracker</h4>
+          <div className="contributors-list">
+            {Object.entries(stats.apologyTracker || {})
+              .sort((a, b) => b[1] - a[1])
+              .map(([sender, count]) => (
+                <div
+                  key={sender}
+                  className="contributor-item"
+                  style={{ justifyContent: "space-between" }}
+                >
+                  <span className="contributor-name">{sender}</span>
+                  <span
+                    className="contributor-count"
+                    style={{ color: "#3b82f6" }} /* blue color */
+                  >
+                    {count} apologies
+                  </span>
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {/* The Caretaker */}
+        <div className="stats-section" style={{ margin: 0 }}>
+          <h4>The Caretaker (Check-ins)</h4>
+          <div className="contributors-list">
+            {Object.entries(stats.careAndAffection || {})
+              .sort((a, b) => b[1].score - a[1].score)
+              .map(([sender, data]) => {
+                const topPhrasesList = Object.entries(data.topPhrases)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 3);
+
+                return (
+                  <div
+                    key={sender}
+                    className="contributor-item"
+                    style={{
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                      }}
+                    >
+                      <span className="contributor-name">{sender}</span>
+                      <span
+                        className="contributor-count"
+                        style={{ color: "#10b981" }} /* green */
+                      >
+                        {data.score} check-ins
+                      </span>
+                    </div>
+                    {topPhrasesList.length > 0 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "0.2rem",
+                          width: "100%",
+                          fontSize: "0.8rem",
+                          color: "#94a3b8",
+                        }}
+                      >
+                        <span>Top Questions:</span>
+                        {topPhrasesList.map(([phrase, count]) => (
+                          <span key={phrase} style={{ paddingLeft: "0.5rem" }}>
+                            • "{phrase}" ({count}x)
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+
+        {/* The Advisor vs The Seeker */}
+        <div className="stats-section" style={{ margin: 0 }}>
+          <h4>The Advisor vs. The Seeker</h4>
+          <div className="contributors-list">
+            {Object.entries(stats.advisorVsOpinionated || {}).map(
+              ([sender, data]) => {
+                const role =
+                  data.opinions > data.questions
+                    ? "The Advisor"
+                    : data.questions > data.opinions
+                      ? "The Seeker"
+                      : "Balanced";
+                const ratio =
+                  data.questions === 0
+                    ? "∞"
+                    : (data.opinions / data.questions).toFixed(2);
+
+                return (
+                  <div
+                    key={sender}
+                    className="contributor-item"
+                    style={{
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                      }}
+                    >
+                      <span className="contributor-name">{sender}</span>
+                      <span
+                        className="contributor-count"
+                        style={{ color: "var(--primary)" }}
+                      >
+                        {role}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                        fontSize: "0.85rem",
+                        color: "#94a3b8",
+                      }}
+                    >
+                      <span>
+                        {data.opinions} Opinions | {data.questions} Qs
+                      </span>
+                      <span>Ratio: {ratio}</span>
+                    </div>
+                  </div>
+                );
+              },
+            )}
+          </div>
+        </div>
+
+        {/* Average Conversation Length */}
+        <div className="stats-section" style={{ margin: 0 }}>
+          <h4>The Session Tracker</h4>
+          <div className="contributors-list">
+            <div
+              className="contributor-item"
+              style={{
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: "0.5rem",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                }}
+              >
+                <span className="contributor-name">Average Chat Session</span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  fontSize: "1.2rem",
+                  color: "var(--primary)",
+                  fontWeight: "bold",
+                }}
+              >
+                {stats.conversationSessions?.avgMessages || 0} messages
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  fontSize: "0.85rem",
+                  color: "#94a3b8",
+                }}
+              >
+                <span>
+                  Duration:{" "}
+                  {formatDuration(
+                    stats.conversationSessions?.avgDurationMs || 0,
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* The Gossip & Focus Matrix */}
+        <div className="stats-section" style={{ margin: 0 }}>
+          <h4>The Gossip & Focus Matrix</h4>
+          <div className="contributors-list">
+            <div
+              className="contributor-item"
+              style={{
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: "0.5rem",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                }}
+              >
+                <span className="contributor-name">Dominant Topic</span>
+                <span
+                  className="contributor-count"
+                  style={{ color: "var(--primary)" }}
+                >
+                  {Math.max(
+                    stats.gossipFocusMatrix?.gossip || 0,
+                    stats.gossipFocusMatrix?.grind || 0,
+                    stats.gossipFocusMatrix?.complaint || 0,
+                  ) === (stats.gossipFocusMatrix?.gossip || 0)
+                    ? "Gossip (People)"
+                    : Math.max(
+                          stats.gossipFocusMatrix?.gossip || 0,
+                          stats.gossipFocusMatrix?.grind || 0,
+                          stats.gossipFocusMatrix?.complaint || 0,
+                        ) === (stats.gossipFocusMatrix?.grind || 0)
+                      ? "The Grind (Work/Study)"
+                      : "Complaining (Venting)"}
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  fontSize: "0.85rem",
+                  color: "#94a3b8",
+                }}
+              >
+                <span>Gossip: {stats.gossipFocusMatrix?.gossip || 0}</span>
+                <span>Grind: {stats.gossipFocusMatrix?.grind || 0}</span>
+                <span>
+                  Complaint: {stats.gossipFocusMatrix?.complaint || 0}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Conversation Initiators */}
         <div className="stats-section" style={{ margin: 0 }}>
           <h4>Conversation Initiators (8h+ gap)</h4>

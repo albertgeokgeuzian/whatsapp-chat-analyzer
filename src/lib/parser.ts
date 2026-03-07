@@ -87,13 +87,26 @@ export function parseChatLog(
 
       // Parse Date with extended formats
       const formats = [
+        // 12-hour with seconds
+        "dd/MM/yy, h:mm:ss a",
         "dd/MM/yyyy, h:mm:ss a",
-        "M/d/yy, H:mm:ss",
+        "M/d/yy, h:mm:ss a",
         "M/d/yyyy, h:mm:ss a",
+        // 24-hour with seconds
+        "dd/MM/yy, H:mm:ss",
         "dd/MM/yyyy, H:mm:ss",
-        "M/d/yy, h:mm a", // Added for format: 8/10/23, 1:51 PM
-        "M/d/yyyy, h:mm a", // Added for format: 8/10/2023, 1:51 PM
+        "M/d/yy, H:mm:ss",
+        "M/d/yyyy, H:mm:ss",
+        // 12-hour without seconds
+        "dd/MM/yy, h:mm a",
         "dd/MM/yyyy, h:mm a",
+        "M/d/yy, h:mm a",
+        "M/d/yyyy, h:mm a",
+        // 24-hour without seconds
+        "dd/MM/yy, H:mm",
+        "dd/MM/yyyy, H:mm",
+        "M/d/yy, H:mm",
+        "M/d/yyyy, H:mm",
       ];
 
       let timestamp: Date | null = null;

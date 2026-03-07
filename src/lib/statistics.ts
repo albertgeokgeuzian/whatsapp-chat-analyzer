@@ -118,6 +118,7 @@ export interface ChatStatistics {
     messageCount: number;
     wordCount: number;
     date: string;
+    text: string;
   } | null;
   mostActiveMonth: { monthYear: string; totalMessages: number } | null;
 
@@ -186,6 +187,24 @@ export interface ChatStatistics {
     string,
     { totalWaitTimeMs: number; checkInCount: number; averageWaitTimeMs: number }
   >;
+
+  // Behavioral & Relational Quirks
+  argumentIndex: Record<string, { score: number; maxIntensityMessage: string }>;
+  apologyTracker: Record<string, number>;
+  careAndAffection: Record<
+    string,
+    { score: number; topPhrases: Record<string, number> }
+  >;
+  conversationSessions: { avgMessages: number; avgDurationMs: number };
+  gossipFocusMatrix: {
+    gossip: number;
+    grind: number;
+    complaint: number;
+  };
+  advisorVsOpinionated: Record<
+    string,
+    { opinions: number; questions: number; ratio: number }
+  >;
 }
 
 export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
@@ -251,6 +270,13 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
     topicKiller: {},
     theAnchor: {},
     ghostingThreshold: {},
+
+    argumentIndex: {},
+    apologyTracker: {},
+    careAndAffection: {},
+    conversationSessions: { avgMessages: 0, avgDurationMs: 0 },
+    gossipFocusMatrix: { gossip: 0, grind: 0, complaint: 0 },
+    advisorVsOpinionated: {},
   };
 
   if (messages.length === 0) return stats;
@@ -331,10 +357,17 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
 
   let messagesSinceLastAnchor = 0;
 
+  let totalSessions = 0;
+  let totalSessionDurationMs = 0;
+  let currentSessionStart: Date | null = null;
+  let currentSessionMessages = 0;
+  let currentSessionEnd: Date | null = null;
+
   let currentMonologueSender: string | null = null;
   let currentMonologueCount = 0;
   let currentMonologueWords = 0;
   let currentMonologueDate: string | null = null;
+  let currentMonologueText = ""; // To store the exact text
 
   // Trackers for Psychological Metrics
   const I_WORDS = new Set(["i", "me", "my", "mine"]);
@@ -486,6 +519,23 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
       };
     }
 
+    if (!stats.argumentIndex[sender]) {
+      stats.argumentIndex[sender] = { score: 0, maxIntensityMessage: "" };
+    }
+    if (!stats.apologyTracker[sender]) {
+      stats.apologyTracker[sender] = 0;
+    }
+    if (!stats.careAndAffection[sender]) {
+      stats.careAndAffection[sender] = { score: 0, topPhrases: {} };
+    }
+    if (!stats.advisorVsOpinionated[sender]) {
+      stats.advisorVsOpinionated[sender] = {
+        opinions: 0,
+        questions: 0,
+        ratio: 0,
+      };
+    }
+
     // 1. Lexical Diversity
     const validWords = msg.content.match(/\b[A-Za-z0-9']+\b/g) || [];
     validWords.forEach((w) => {
@@ -578,13 +628,127 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
       }
     });
 
+    const lowerContent = msg.content.toLowerCase();
+    const tokenWords = lowerContent.split(/\s+/).filter((w) => w.length > 0);
+
+    // --- Behavioral & Relational Quirks ---
+    // 1. Advisor vs Opinionated
+    const opinionPhrases = [
+      "i think",
+      "i feel like",
+      "imo",
+      "in my opinion",
+      "i believe",
+    ];
+    const seekingPhrases = [
+      "do you think",
+      "should i",
+      "what do you think",
+      "how do you feel",
+      "what should i",
+    ];
+    opinionPhrases.forEach((p) => {
+      if (lowerContent.includes(p))
+        stats.advisorVsOpinionated[sender].opinions++;
+    });
+    seekingPhrases.forEach((p) => {
+      if (lowerContent.includes(p))
+        stats.advisorVsOpinionated[sender].questions++;
+    });
+
+    // 2. Apology Tracker
+    // Count exact word 'sorry' but apply contextual filter
+    if (tokenWords.includes("sorry")) {
+      if (
+        !lowerContent.includes("you never say sorry") &&
+        !lowerContent.includes("are you sorry")
+      ) {
+        stats.apologyTracker[sender]++;
+      }
+    }
+
+    // 3. Care & Affection Matrix
+    const carePhrases = [
+      "how did u sleep",
+      "how did you sleep",
+      "where are u",
+      "where are you",
+      "what did u do",
+      "what did you do",
+      "did u eat",
+      "did you eat",
+      "what did u eat",
+      "what did you eat",
+      "who r u with",
+      "who are you with",
+      "what r u doing",
+      "what are you doing",
+    ];
+    carePhrases.forEach((p) => {
+      if (lowerContent.includes(p)) {
+        stats.careAndAffection[sender].score++;
+        stats.careAndAffection[sender].topPhrases[p] =
+          (stats.careAndAffection[sender].topPhrases[p] || 0) + 1;
+      }
+    });
+
+    // 4. Argument Index
+    const argumentPhrases = [
+      "you never",
+      "why did you",
+      "why did u",
+      "how could u",
+      "how could you",
+      "forget it",
+      "khls",
+    ];
+    let isArgument = false;
+    let argIntensity = 0;
+
+    argumentPhrases.forEach((p) => {
+      if (lowerContent.includes(p)) {
+        isArgument = true;
+        argIntensity++;
+      }
+    });
+
+    // Standalone "ok" check
+    if (lowerContent === "ok" || lowerContent === "k") {
+      isArgument = true;
+      argIntensity++;
+    }
+
+    // ALL CAPS check (more than 5 letters, all caps)
+    const isAllCaps =
+      msg.content === msg.content.toUpperCase() &&
+      /[A-Z]{5,}/.test(msg.content);
+    if (isAllCaps) {
+      isArgument = true;
+      argIntensity += 2;
+    }
+
+    if (isArgument) {
+      stats.argumentIndex[sender].score++;
+      // Check for max intensity message
+      const currentMaxScore = stats.argumentIndex[sender].maxIntensityMessage
+        ? 1
+        : 0; // simplified intensity check
+      // We can just keep replacing with longer/angrier messages
+      if (
+        argIntensity > currentMaxScore ||
+        (argIntensity === currentMaxScore &&
+          msg.content.length >
+            stats.argumentIndex[sender].maxIntensityMessage.length)
+      ) {
+        stats.argumentIndex[sender].maxIntensityMessage = msg.content;
+      }
+    }
+
     // --- Psychological & Relational Dynamics ---
     let vulnWordsInMsg = 0;
     let posWordsInMsg = 0;
     let negWordsInMsg = 0;
 
-    const lowerContent = msg.content.toLowerCase();
-    const tokenWords = lowerContent.split(/\s+/).filter((w) => w.length > 0);
     const emjRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
     const msgEmojis = Array.from(msg.content.matchAll(emjRegex)).map(
       (m) => m[0],
@@ -604,6 +768,39 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
       // Sentiment
       if (POS_WORDS.has(t)) posWordsInMsg++;
       if (NEG_WORDS.has(t)) negWordsInMsg++;
+
+      // Gossip & Focus Matrix
+      if (["he", "she", "they", "him", "her", "them"].includes(t)) {
+        stats.gossipFocusMatrix.gossip++;
+      }
+      if (
+        [
+          "boss",
+          "exam",
+          "office",
+          "class",
+          "work",
+          "school",
+          "meeting",
+          "studying",
+        ].includes(t)
+      ) {
+        stats.gossipFocusMatrix.grind++;
+      }
+      if (
+        [
+          "ugh",
+          "annoying",
+          "tired",
+          "hate",
+          "worst",
+          "stress",
+          "stressed",
+          "complaining",
+        ].includes(t)
+      ) {
+        stats.gossipFocusMatrix.complaint++;
+      }
 
       // Emotional Contagion
       if (msgEmojis.includes(t) || PHRASES.includes(t)) {
@@ -775,11 +972,36 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
         }
         responseTimes[sender].push(timeDiffMs);
       }
+      // Conversation Session Logic
+      if (timeDiffMs < 1200000) {
+        // 20 minutes
+        currentSessionMessages++;
+        currentSessionEnd = msg.timestamp;
+      } else {
+        // Gap > 20 mins, end current session
+        if (
+          currentSessionStart &&
+          currentSessionEnd &&
+          currentSessionMessages > 1
+        ) {
+          totalSessions++;
+          totalSessionDurationMs +=
+            currentSessionEnd.getTime() - currentSessionStart.getTime();
+        }
+        currentSessionStart = msg.timestamp;
+        currentSessionEnd = msg.timestamp;
+        currentSessionMessages = 1;
+      }
     } else {
       consecutiveMessages = 1;
       // First message of the chat is an initiation
       stats.initiations[sender] = (stats.initiations[sender] || 0) + 1;
       stats.totalInitiations++;
+
+      // Initialize first session
+      currentSessionStart = msg.timestamp;
+      currentSessionEnd = msg.timestamp;
+      currentSessionMessages = 1;
     }
 
     // Hours
@@ -818,12 +1040,14 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
           messageCount: currentMonologueCount,
           wordCount: currentMonologueWords,
           date: currentMonologueDate!,
+          text: currentMonologueText,
         };
       }
       currentMonologueSender = sender;
       currentMonologueCount = 1;
       currentMonologueWords = words.length;
       currentMonologueDate = format(msg.timestamp, "MMMM d, yyyy");
+      currentMonologueText = msg.content;
     }
 
     // Attachments
@@ -991,7 +1215,25 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
       messageCount: currentMonologueCount,
       wordCount: currentMonologueWords,
       date: currentMonologueDate!,
+      text: currentMonologueText,
     };
+  }
+
+  // Finalize Session info
+  if (currentSessionStart && currentSessionEnd && currentSessionMessages > 1) {
+    totalSessions++;
+    const start = currentSessionStart as Date;
+    const end = currentSessionEnd as Date;
+    totalSessionDurationMs += end.getTime() - start.getTime();
+  }
+
+  if (totalSessions > 0) {
+    stats.conversationSessions.avgMessages = Math.round(
+      stats.totalMessages / totalSessions,
+    );
+    stats.conversationSessions.avgDurationMs = Math.round(
+      totalSessionDurationMs / totalSessions,
+    );
   }
 
   // Finalize Most Active Month
