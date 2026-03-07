@@ -159,7 +159,7 @@ export function StatisticsBoard({ stats }: Props) {
         </div>
       </div>
 
-      <div className="stats-header" style={{ marginTop: "2rem" }}>
+      <div className="stats-header">
         <h3>Conversational Roles & Flow</h3>
       </div>
 
@@ -353,7 +353,7 @@ export function StatisticsBoard({ stats }: Props) {
         </div>
       </div>
 
-      <div className="stats-header" style={{ marginTop: "2rem" }}>
+      <div className="stats-header">
         <h3>Psychological & Relational Dynamics</h3>
       </div>
 
@@ -580,7 +580,7 @@ export function StatisticsBoard({ stats }: Props) {
         </div>
       </div>
 
-      <div className="stats-header" style={{ marginTop: "2rem" }}>
+      <div className="stats-header">
         <h3>Milestones & Extremes</h3>
       </div>
 
@@ -803,7 +803,7 @@ export function StatisticsBoard({ stats }: Props) {
         </div>
       </div>
 
-      <div className="stats-header" style={{ marginTop: "2rem" }}>
+      <div className="stats-header">
         <h3>Behavioral & Relational Quirks</h3>
       </div>
 
@@ -1357,7 +1357,7 @@ export function StatisticsBoard({ stats }: Props) {
         </div>
       </div>
 
-      <div className="stats-header" style={{ marginTop: "2rem" }}>
+      <div className="stats-header">
         <h3>Timing & Rhythms</h3>
       </div>
 
@@ -1590,10 +1590,7 @@ export function StatisticsBoard({ stats }: Props) {
         </div>
       </div>
 
-      <div
-        className="stats-section"
-        style={{ height: "450px", marginTop: "1.5rem", marginBottom: "1rem" }}
-      >
+      <div className="stats-section" style={{ height: "450px" }}>
         <h4>Activity by Hour</h4>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -1632,10 +1629,7 @@ export function StatisticsBoard({ stats }: Props) {
         </ResponsiveContainer>
       </div>
 
-      <div
-        className="stats-section"
-        style={{ height: "450px", marginTop: "1.5rem", marginBottom: "1rem" }}
-      >
+      <div className="stats-section" style={{ height: "450px" }}>
         <h4>Activity Over Time</h4>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
@@ -1687,7 +1681,7 @@ export function StatisticsBoard({ stats }: Props) {
         </ResponsiveContainer>
       </div>
 
-      <div className="stats-header" style={{ marginTop: "2rem" }}>
+      <div className="stats-header">
         <h3>Content & Linguistic Style</h3>
       </div>
 
@@ -1931,7 +1925,7 @@ export function StatisticsBoard({ stats }: Props) {
         </div>
       </div>
 
-      <div className="stats-header" style={{ marginTop: "2rem" }}>
+      <div className="stats-header">
         <h3>Deep-Dive Linguistic Quirks</h3>
       </div>
 
