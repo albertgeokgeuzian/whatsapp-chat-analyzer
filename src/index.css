@@ -391,7 +391,7 @@ p {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   transition: all var(--transition-fast);
   position: relative;
-  overflow: hidden;
+  z-index: 1;
 }
 
 .stat-card:hover {
@@ -440,6 +440,8 @@ p {
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .stats-section h4 {
@@ -665,6 +667,13 @@ p {
 .tooltip-container:hover,
 .tooltip-icon.active {
   color: var(--primary);
+}
+
+.stat-card:has(.tooltip-container:hover),
+.stat-card:has(.tooltip-icon.active),
+.stats-section:has(.tooltip-container:hover),
+.stats-section:has(.tooltip-icon.active) {
+  z-index: 100;
 }
 
 .tooltip-content {
