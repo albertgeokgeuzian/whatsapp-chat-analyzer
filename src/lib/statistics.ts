@@ -99,6 +99,7 @@ export interface ChatStatistics {
 
   // Content & Linguistic Style Metrics
   topWordsPerSender: Record<string, { word: string; count: number }[]>;
+  topPhrasesPerSender: Record<string, { phrase: string; count: number }[]>;
   laughTrackPerSender: Record<string, Record<string, number>>;
   topEmojisPerSender: Record<string, { emoji: string; count: number }[]>;
   mediaSharedPerSender: Record<
@@ -176,6 +177,7 @@ export interface ChatStatistics {
   _tempWords?: Record<string, Record<string, number>>;
   _tempEmojis?: Record<string, Record<string, number>>;
   _tempUniqueWords?: Record<string, Set<string>>;
+  _tempPhrases?: Record<string, Record<string, number>>;
 
   // Conversational Roles & Flow
   topicKiller: Record<
@@ -243,6 +245,7 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
     longestSilenceEnd: null,
 
     topWordsPerSender: {},
+    topPhrasesPerSender: {},
     laughTrackPerSender: {},
     topEmojisPerSender: {},
     mediaSharedPerSender: {},
@@ -460,6 +463,7 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
 
     // Linguistic Metric Initialization per Sender
     if (!stats.topWordsPerSender[sender]) stats.topWordsPerSender[sender] = [];
+    if (!stats.topPhrasesPerSender[sender]) stats.topPhrasesPerSender[sender] = [];
     if (!stats.laughTrackPerSender[sender])
       stats.laughTrackPerSender[sender] = {};
     if (!stats.topEmojisPerSender[sender])
@@ -484,6 +488,8 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
     if (!stats._tempUniqueWords) stats._tempUniqueWords = {};
     if (!stats._tempUniqueWords[sender])
       stats._tempUniqueWords[sender] = new Set();
+    if (!stats._tempPhrases) stats._tempPhrases = {};
+    if (!stats._tempPhrases[sender]) stats._tempPhrases[sender] = {};
 
     if (!stats.punctuationPersonality[sender]) {
       stats.punctuationPersonality[sender] = {
@@ -630,6 +636,19 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
 
     const lowerContent = msg.content.toLowerCase();
     const tokenWords = lowerContent.split(/\s+/).filter((w) => w.length > 0);
+
+    // Phrases extraction (Full message is the phrase)
+    const cleanContentForPhrases = lowerContent.replace(/<attached:[^>]+>/g, "").trim();
+    // Exclude basic omission phrases if they leaked through, or are the only content
+    const isOmittedMedia = /^(image|video|document|sticker|gif|audio|contact card|voice call|missed voice call) omitted$/i.test(cleanContentForPhrases);
+    
+    // Check if the entire message is just stop words
+    const phraseWords = cleanContentForPhrases.split(/\s+/).map(w => w.replace(/[^\w\s']/g, "")).filter(w => w.length > 0);
+    const hasNonStopWord = phraseWords.some(w => !STOP_WORDS.has(w) && w.length > 1);
+
+    if (cleanContentForPhrases.length > 0 && !isOmittedMedia && hasNonStopWord) {
+      stats._tempPhrases![sender][cleanContentForPhrases] = (stats._tempPhrases![sender][cleanContentForPhrases] || 0) + 1;
+    }
 
     // --- Behavioral & Relational Quirks ---
     // 1. Advisor vs Opinionated
@@ -920,13 +939,19 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
       // The Topic Killer
       if (timeDiffMs >= 14400000) {
         // 4 hours
-        const prevContent = prevMsg.content.trim();
-        const prevWords = prevContent.split(/\s+/).filter((w) => w.length > 0);
+        const cleanPhraseContent = prevMsg.content.replace(/<attached:[^>]+>/g, "").trim();
+        const prevWords = cleanPhraseContent.split(/\s+/).filter((w) => w.length > 0);
+        
         if (prevWords.length > 0 && prevWords.length < 5) {
-          const lowerPhrase = prevContent.toLowerCase();
+          const lowerPhrase = cleanPhraseContent.toLowerCase().replace(/\s+/g, " ").trim();
           stats.topicKiller[prevMsg.sender].count++;
-          stats.topicKiller[prevMsg.sender].phrases[lowerPhrase] =
-            (stats.topicKiller[prevMsg.sender].phrases[lowerPhrase] || 0) + 1;
+          if (lowerPhrase) {
+            stats.topicKiller[prevMsg.sender].phrases[lowerPhrase] =
+              (stats.topicKiller[prevMsg.sender].phrases[lowerPhrase] || 0) + 1;
+          }
+        } else if (prevMsg.hasAttachment && prevWords.length === 0) {
+            // Killed the topic with just media, increment count without a specific text phrase
+            stats.topicKiller[prevMsg.sender].count++;
         }
       }
 
@@ -1275,6 +1300,26 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
       stats.topWordsPerSender[sender] = [];
     }
 
+    // Process Top Phrases
+    if ((stats as any)._tempPhrases?.[sender]) {
+      const phrasesObj = (stats as any)._tempPhrases[sender] as Record<string, number>;
+      const sortedPhrases = Object.entries(phrasesObj)
+        .filter(([_, count]) => count > 1) // appear at least twice
+        .sort((a, b) => b[1] - a[1]) || [];
+        
+      const finalPhrases: { phrase: string; count: number }[] = [];
+      for (const [phrase, count] of sortedPhrases) {
+        // Since phrase is now the entire message, we don't aggressively filter out sub-phrases
+        // unless they are extremely similar
+        finalPhrases.push({ phrase, count });
+        if (finalPhrases.length >= 3) break;
+      }
+      
+      stats.topPhrasesPerSender[sender] = finalPhrases;
+    } else {
+      stats.topPhrasesPerSender[sender] = [];
+    }
+
     // Process Top Emojis
     if ((stats as any)._tempEmojis?.[sender]) {
       const sortedEmojis = Object.entries(
@@ -1311,6 +1356,7 @@ export function computeStatistics(messages: ChatMessage[]): ChatStatistics {
   delete (stats as any)._tempWords;
   delete (stats as any)._tempEmojis;
   delete (stats as any)._tempUniqueWords;
+  delete (stats as any)._tempPhrases;
 
   stats.topHour = topHour;
   stats.topDay = topDay;

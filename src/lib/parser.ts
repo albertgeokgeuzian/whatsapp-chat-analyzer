@@ -31,7 +31,9 @@ export function parseChatLog(
   let currentMessage: ChatMessage | null = null;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    let line = lines[i].trim();
+    // Strip zero-width formatting characters (LRM, RLM, etc.)
+    line = line.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, "");
     if (!line) continue;
 
     let dateString = "";
